@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <title>seclock</title>
+</head>
+
+<body>
+  <div id="content">
+    <h1 id="timeText" style="text-align: center;margin: 0;"></h1>
+    <canvas id="canvas" width="600" height="600"
+      style="position:absolute;top:50%;left:50%;transform: translate(-50%,-50%);"></canvas>
+  </div>
+  <script type="text/javascript">
+    let timeText = document.getElementById("timeText");
+    let canvas = document.getElementById("canvas");
+    let context = canvas.getContext("2d");
+    context.lineWidth = 2;
+    function getTimeText(t) {
+      let h = t.getHours();
+      let m = t.getMinutes();
+      let s = t.getSeconds();
+      let ms = t.getMilliseconds();
+
+      if (h < 10) h = "0" + h;
+      if (m < 10) m = "0" + m;
+      if (s < 10) s = "0" + s;
+      if (ms < 10) ms = "00" + ms;
+      else if (ms < 100) ms = "0" + ms;
+
+      return (h + ":" + m + ":" + s + "." + ms);
+    }
+    function draw() {
+      let date = new Date();
+      context.fillStyle = "white";
+      if (date.getSeconds() >= 55) context.fillStyle = "#ffffdf";
+      if (date.getSeconds() == 59) context.fillStyle = "#ffcfdf";
+
+      context.fillRect(0, 0, 600, 600);
+
+      context.strokeStyle = "red";
+      context.beginPath();
+      context.moveTo(300, 300);
+      context.lineTo(300, 50);
+      context.closePath();
+      context.stroke();
+
+      context.fillStyle = "blue";
+      for (let i = 0; i < 50; ++i) {
+        context.beginPath();
+        let arg = (90 - i / 50 * 360) * (Math.PI / 180);
+        let y = 300 - 250 * Math.sin(arg), x = 300 + 250 * Math.cos(arg);
+        context.arc(x, y, 4, 0, 2 * Math.PI);
+        context.fill();
+      }
+      for (let i = 0; i < 10; ++i) {
+        context.beginPath();
+        let arg = (90 - i / 10 * 360) * (Math.PI / 180);
+        let y = 300 - 250 * Math.sin(arg), x = 300 + 250 * Math.cos(arg);
+        context.arc(x, y, 8, 0, 2 * Math.PI);
+        context.fill();
+      }
+
+      context.fillStyle = "black";
+      context.beginPath();
+      context.arc(300, 300, 8, 0, 2 * Math.PI);
+      context.fill();
+
+      context.strokeStyle = "black";
+      context.beginPath();
+      context.moveTo(300, 300);
+      date = new Date();
+      let arg = (90 - date.getMilliseconds() / 1000 * 360) * (Math.PI / 180);
+      let y = 300 - 250 * Math.sin(arg), x = 300 + 250 * Math.cos(arg);
+      context.lineTo(x, y);
+      context.closePath();
+      context.stroke();
+
+      timeText.innerHTML = getTimeText(date);
+
+      context.fillStyle = "red";
+      context.beginPath();
+      context.arc(x, y, 8, 0, 2 * Math.PI);
+      context.fill();
+
+    }
+    setInterval(draw, 10);
+  </script>
+</body>
+
+</html>
