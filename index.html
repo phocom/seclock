@@ -4,19 +4,36 @@
 <head>
   <meta charset="utf-8">
   <title>seclock</title>
+  <style>
+    * {
+      margin: 4px;
+    }
+  </style>
 </head>
 
 <body>
+  <audio id="sound" preload="auto">
+    <source src="button06.mp3" type="audio/mp3"></audio>
   <div id="content">
     <h1 id="timeText" style="text-align: center;margin: 0;"></h1>
+    LAG<input type="text" id="marker" value="0">
+    SOUND<input type="checkbox" id="play">
+    FLASH<input type="checkbox" id="flash">
     <canvas id="canvas" width="600" height="600"
       style="position:absolute;top:50%;left:50%;transform: translate(-50%,-50%);"></canvas>
   </div>
   <script type="text/javascript">
+    let sound = document.getElementById("sound");
+    let play = document.getElementById("play");
+    let flash = document.getElementById("flash");
     let timeText = document.getElementById("timeText");
+    let markerTime = document.getElementById("marker");
     let canvas = document.getElementById("canvas");
     let context = canvas.getContext("2d");
     context.lineWidth = 2;
+    let lastMs = 0;
+    let lastState = 0;
+    sound.volume = 0.8;
     function getTimeText(t) {
       let h = t.getHours();
       let m = t.getMinutes();
@@ -33,31 +50,36 @@
     }
     function draw() {
       let date = new Date();
-      context.fillStyle = "white";
-      if (date.getSeconds() >= 55) context.fillStyle = "#ffffdf";
-      if (date.getSeconds() == 59) context.fillStyle = "#ffcfdf";
 
+      let marker = Number(markerTime.value);
+      date.setMilliseconds(date.getMilliseconds() + marker);
+      marker = 0;
+
+      context.fillStyle = "white";
+      let ms = date.getMilliseconds();
       context.fillRect(0, 0, 600, 600);
 
       context.strokeStyle = "red";
+      let arg = (90 - marker / 1000 * 360) * (Math.PI / 180);
+      let y = 300 - 250 * Math.sin(arg), x = 300 + 250 * Math.cos(arg);
       context.beginPath();
       context.moveTo(300, 300);
-      context.lineTo(300, 50);
+      context.lineTo(x, y);
       context.closePath();
       context.stroke();
 
       context.fillStyle = "blue";
       for (let i = 0; i < 50; ++i) {
         context.beginPath();
-        let arg = (90 - i / 50 * 360) * (Math.PI / 180);
-        let y = 300 - 250 * Math.sin(arg), x = 300 + 250 * Math.cos(arg);
+        arg = (90 - i / 50 * 360) * (Math.PI / 180);
+        y = 300 - 250 * Math.sin(arg), x = 300 + 250 * Math.cos(arg);
         context.arc(x, y, 4, 0, 2 * Math.PI);
         context.fill();
       }
       for (let i = 0; i < 10; ++i) {
         context.beginPath();
-        let arg = (90 - i / 10 * 360) * (Math.PI / 180);
-        let y = 300 - 250 * Math.sin(arg), x = 300 + 250 * Math.cos(arg);
+        arg = (90 - i / 10 * 360) * (Math.PI / 180);
+        y = 300 - 250 * Math.sin(arg), x = 300 + 250 * Math.cos(arg);
         context.arc(x, y, 8, 0, 2 * Math.PI);
         context.fill();
       }
@@ -70,9 +92,8 @@
       context.strokeStyle = "black";
       context.beginPath();
       context.moveTo(300, 300);
-      date = new Date();
-      let arg = (90 - date.getMilliseconds() / 1000 * 360) * (Math.PI / 180);
-      let y = 300 - 250 * Math.sin(arg), x = 300 + 250 * Math.cos(arg);
+      arg = (90 - date.getMilliseconds() / 1000 * 360) * (Math.PI / 180);
+      y = 300 - 250 * Math.sin(arg), x = 300 + 250 * Math.cos(arg);
       context.lineTo(x, y);
       context.closePath();
       context.stroke();
@@ -84,8 +105,30 @@
       context.arc(x, y, 8, 0, 2 * Math.PI);
       context.fill();
 
+      context.strokeStyle = "red";
+      //if (Math.abs(ms) <= 20) context.lineWidth = 6;
+      //context.beginPath();
+      //context.arc(300, 50, 16, 0, 2 * Math.PI);
+      //context.stroke(); context.lineWidth = 2;
+
+      let state = Math.floor(((ms + 25) % 1000) / 500);
+
+      if (lastState != state && play.checked) {
+        sound.currentTime = 0;
+        sound.play();
+      }
+      if (ms < 20 && flash.checked) {
+        document.bgColor = "red";
+      } else {
+        document.bgColor = "white";
+      }
+
+      lastMs = ms;
+      lastState = state;
+      //context.fillStyle = "black";
+      //context.fillRect(300 - (1000 - ms) / 1000 * 300, 0, (1000 - ms) / 1000 * 600, 40);
     }
-    setInterval(draw, 10);
+    setInterval(draw, 3);
   </script>
 </body>
 
